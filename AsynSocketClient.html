@@ -1813,6 +1813,7 @@ Send session id to server from client in each request.
 						console.log("Attaching callback method to group.");
 						socket.on(group, function (data) {
 							console.log(data);
+							data.fromSever = true;
 							// Foundation.MessageController.sendMessage(group, data);
 							if (action === undefined) {
 								return;
@@ -1843,6 +1844,9 @@ Send session id to server from client in each request.
 							msg.sessionId = localStorage.sessionId;
 							console.log(msg);
 						}
+						if (msg.fromClient == true) {
+							return;
+						}
 						socket.emit(group, msg);
 						Foundation.MessageController.sendMessage(group, msg);
 					}
@@ -1860,6 +1864,9 @@ Send session id to server from client in each request.
 								console.log("resolve:" + requirement);
 								return {
 									for: function (entity) {
+										if (entity.fromClient == true) {
+											return;
+										}
 										$to(controller).say({channel:requirement, data:entity, context:context});
 										// socket.emit(controller, {channel:requirement, data:entity});
 										// Foundation.MessageController.sendMessage(controller, entity, requirement);

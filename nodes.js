@@ -46,8 +46,8 @@ var model = {
 
 
 
-var client = redis.createClient(null, "copybyte.com");
-var otherClient = redis.createClient(null, "copybyte.com");  
+var client = redis.createClient(6379, "copybyte.com");
+var otherClient = redis.createClient(6379, "copybyte.com");  
   
   
 io.sockets.on('connection', function (socket) {

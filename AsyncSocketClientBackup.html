@@ -1,0 +1,2503 @@
+<!doctype html>
+<html>
+	<head>
+		<script src="/socket.io/socket.io.js"></script>
+
+
+		<script>
+		if (!Function.prototype.bind) {
+		  Function.prototype.bind = function (oThis) {
+		    if (typeof this !== "function") {
+		      // closest thing possible to the ECMAScript 5 internal IsCallable function
+		      throw new TypeError("Function.prototype.bind - what is trying to be bound is not callable");
+		    }
+ 
+		    var aArgs = Array.prototype.slice.call(arguments, 1), 
+		        fToBind = this, 
+		        fNOP = function () {},
+		        fBound = function () {
+		          return fToBind.apply(this instanceof fNOP && oThis
+		                                 ? this
+		                                 : oThis,
+		                               aArgs.concat(Array.prototype.slice.call(arguments)));
+		        };
+ 
+		    fNOP.prototype = this.prototype;
+		    fBound.prototype = new fNOP();
+ 
+		    return fBound;
+		  };
+		}
+	
+		
+
+		(function (className, namespace) {
+			if (typeof namespace == 'string' && !window[namespace]) {
+				window[namespace] = {};
+			}
+			else if (typeof namespace == 'string' && window[namespace] && typeof className == 'string' && window[namespace][className]) {
+				return;
+			}
+			namespace = namespace || 'window';
+			/**
+			 * Message controller constructor.
+			 * @returns {MessageController} instance
+			 */
+			var MessageController = function () {
+				/**
+				 * Object to store the message handlers.
+				 * @property
+				 */
+				this.messagePool = {};
+				/**
+				 * Unique ID counter
+				 * @property
+				 */
+				this.currentUID = 0;
+			};
+			/**
+			 * Prototype of the MessageController class
+			 * @prototype
+			 */
+			MessageController.prototype = {
+				/**
+				 * Add an event listener
+				 * @param {String} group Listener group to add the callback to.
+				 * @param {Function} callback callback to register to a listener group.
+				 */
+				addListener: function (group, callback) {
+					this.currentUID += 1;
+					var listener = {
+						group: group,
+						UID: this.currentUID,
+						sendMessage: (function (that) {
+							return function (message, channel) {
+								return that.sendMessage(this.group, message, channel);
+							};
+						})(this),
+						destroy: (function (that) {
+							return function () {
+								return that.removeListener(this);
+							};
+						})(this)
+					};
+
+					this.messagePool[group] = this.messagePool[group] || {};
+					this.messagePool[group][listener.UID] = callback;
+					return listener;
+				},
+				/**
+				 * Remove a registered callback
+				 * @param {Listener} listener Listener resource object
+				 */
+				removeListener: function (listener) {
+					try {
+						delete this.messagePool[listener.group][listener.UID];
+					}
+					catch (e) {}
+				},
+				/**
+				 * Send a message to a listener group.
+				 * @param {String} group Listener group reference by name
+				 * @param {Any} message Message to be send to the specified listener group
+				 * @param {String} channel Message channel to allow listener callback to filter messages
+				 * targeted at specific listeners.
+				 */
+				sendMessage: function (group, message, channel) {
+					var messageGroup = this.messagePool[group],
+					exceptions = [];
+					for (callback in messageGroup) {
+						if (messageGroup.hasOwnProperty(callback)) {
+							try {
+								messageGroup[callback](message, channel);
+							}
+							catch (e) {
+								exceptions.push({
+									message: 'Callback failed for' + callback,
+									exception: e
+								});
+							}
+						}
+					}
+					return exceptions;
+				}
+			};
+
+			window[namespace][className] = new MessageController();
+
+		})('MessageController', 'Foundation');
+
+
+	
+	
+	
+	
+	
+	
+	
+	
+	
+		var socket = io.connect('http://localhost:9374');
+		
+
+
+		// 
+		// 
+		// $handle("account-controller").with(function (msg) {
+		// 	console.log(msg);
+		// });
+		// 	
+		// $with("account-controller").and("logger").resolve("as a user i would like to login").for({username:"scott", password:"test"});
+		// 
+		// $handle("logger").with(function (msg) {
+		// 	console.log(msg);
+		// });	
+		// 	
+		// $to("logger").say({logger:"is online"});
+		// 	
+		// $handle("pong").with(function () {
+		// 	$to("logger").say(arguments);
+		// });
+		// 	
+		// $handle("localization").with(function (message) {
+		// 	$to("logger").say("Translating: " + message.translate);
+		// });
+		// 	
+		// $to("localization").say({translate:"Hello world", language:"german"});
+		// 	
+		// // $to("action").say("a user would like to login", data:{})
+		// // $to("action").say({message:{data:{}}})
+		// 	
+		// $with("logger").and("logger").resolve("user would like to login").for({username:"scott", password:"test"});
+		// 	
+		</script>		
+		<script type="text/javascript">
+		
+		
+	
+		
+		
+		
+		
+		
+		</script>
+		
+
+		<style>
+		
+		body {
+			margin:0;
+			padding:0;
+		}
+		
+		section[data-widget="entity-builder"] {
+			border:1px solid #E0E0E0;
+		}
+
+		section[data-widget="entity-builder"] h1 {
+			
+		}	
+		
+		li[data-widget="list-element"] {
+			list-style: none;
+			border-bottom:1px solid #CCC;
+		}	
+		
+		section[data-widget="account-controller"] {
+			border-bottom:1px solid #CCC;
+			background:#FAFAFA;
+			box-shadow: 0px 2px 4px #CCC;
+			margin:0px;
+			padding:5px;
+			height:30px;
+			overflow:hidden;
+		}
+		
+		
+		/*general style*/
+		html, body {
+		    margin: 0 auto;
+		    padding: 0;
+			max-width:800px;
+			font-family:sans-serif;
+			font-weight:200;
+			background:#333;
+			-webkit-touch-callout: none;
+			-webkit-user-select: none;
+			-khtml-user-select: none;
+			-moz-user-select: none;
+			-ms-user-select: none;
+			user-select: none;
+
+		}
+
+
+		header, hgroup, nav, section, article, aside, footer {
+		    display: block;
+		}
+
+		a {
+		    text-decoration: none;
+		    color: #000;
+		}
+
+		a:hover {
+		    text-decoration: underline;
+		    	-webkit-transition: 0.7s ease;
+		    	-moz-transition: 0.7s ease;
+		    	-ms-transition: 0.7s ease;
+		    	-o-transition: 0.7s ease;
+		}
+
+		hr {
+		    width: 380px;
+		}
+
+		#wrapper {
+		    width: 100%;
+		    margin: 0 auto;
+		}
+		/*header area*/
+		header {
+			position:absolute;
+			left:0;
+			right:0;
+			top:0;
+			height:75px;
+		    background: #333;
+		/*	-webkit-box-shadow: inset 0px -10px 20px rgba(0,0,0,0.3);
+			-moz-box-shadow: inset 0px -10px 20px rgba(0,0,0,0.3);
+			box-shadow: inset 0px -10px 20px rgba(0,0,0,0.3);*/
+		}
+
+		hgroup h1 {
+		    color: #999;
+			margin-left:-20px;
+			font-weight:200;
+			float:left;
+			margin-top:14px;
+			width:100%;
+			text-align:right;
+		}
+		/*nav area*/
+		nav {
+		/*    width: 100%;*/
+		/*    height: 20px;*/
+		/*    background: #C66;*/
+		/*    margin-left: 200px;*/
+		/*	float:right;*/
+
+		}
+
+		nav ul {
+		/*    margin: 0 0 0 -10px;*/
+		}
+
+		nav li {
+		/*    float: left;*/
+		    list-style-type: none;
+		/*    padding: 0 10px;*/
+		}
+		/*section area*/
+		section {
+		/*    width: 400px;*/
+		/*    background: #CCC;*/
+		    margin-top: -20px;
+		}
+
+		hgroup h2 {
+		    color: #000;
+		    padding: 10px 0 0 10px;
+		}
+
+		article {
+		/*    width: 400px;*/
+		/*    background: #CCC;*/
+		}
+
+		article p {
+		    padding: 10px;
+		}
+		/*aside area*/
+		aside {
+		    background: #FAFAFA;
+		/*	border-right: 1px solid #CCC;*/
+		/*	box-shadow: 0px 1px 2px #FFF;*/
+			position:absolute;
+			left:0;
+			top:0;
+			bottom:0;
+			width:250px;
+		}
+
+		hgroup h3 {
+		    color: #fff;
+		    padding: 10px 0 0 10px;
+		}
+
+		aside article {
+		    color: #FFF;
+		}
+
+		input {
+		    background-color: #fff;
+		    border: 1px solid #ccc;
+		    -webkit-box-shadow: inset 0 1px 1px rgba(0,0,0,0.075);
+		    -moz-box-shadow: inset 0 1px 1px rgba(0,0,0,0.075);
+		    box-shadow: inset 0 1px 1px rgba(0,0,0,0.075);
+		    -webkit-transition: border linear 0.7s,box-shadow linear 0.7s;
+		    -moz-transition: border linear 0.7s,box-shadow linear 0.7s;
+		    -o-transition: border linear 0.7s,box-shadow linear 0.7s;
+		    transition: border linear 0.7s,box-shadow linear 0.7s;
+
+		    display: inline-block;
+		    height: 18px;
+		    padding: 4px 6px;
+		    margin-bottom: 9px;
+		    font-size: 12px;
+		    line-height: 18px;
+		    color: #666;
+		    -webkit-border-radius: 4px;
+		    -moz-border-radius: 4px;
+		    border-radius: 4px;
+		    vertical-align: middle;
+		}
+
+		div.row {
+		    width:100%;
+		    height:100px;
+		}
+		.span4 {
+		    width: 370px;
+		    float: left;
+		    min-height: 1px;
+		    margin-left: 30px;
+		}
+
+		.help-inline {
+		display: inline-block;
+		vertical-align: middle;
+		padding-left: 5px;
+		}
+
+		fieldset {
+		padding: 0;
+		margin: 0;
+		border: 0;
+		}
+
+		legend {
+		font-family: "Helvetica Neue",Helvetica,Arial,sans-serif;
+		font-size: 15.6px;
+		margin-bottom: 0;
+		}
+
+		div#tool-drawer-handler {
+			z-index:101;
+			position:absolute;
+			top:0;
+			bottom:0;
+			top:48%;
+
+		/*	margin-top:90%;*/
+			width:20px;
+			text-align:right;
+			line-height:4px;
+			vertical-align:middle;
+			right:-5px;
+		/*	background:#FEFEFE;*/
+			cursor:move;
+			opacity:0.6;
+			-webkit-touch-callout: none;
+			-webkit-user-select: none;
+			-khtml-user-select: none;
+			-moz-user-select: none;
+			-ms-user-select: none;
+			user-select: none;
+		}
+
+
+		/*footer area*/
+		footer {
+			position:absolute;
+
+			bottom:0px;
+			left:0px;
+			right:0px;
+		    height: 75px;
+		    background: #333;
+			z-index:0;
+		/*    border-top: 1px solid #000;*/
+			text-align:right;
+			color:#666 !important;
+			padding-right:20px;
+
+			    	-webkit-transition: 0.7s ease;
+		        	-moz-transition: 0.7s ease;
+		        	-ms-transition: 0.7s ease;
+		        	-o-transition: 0.7s ease;
+		/*	
+			-webkit-box-shadow: inset 0px 10px 20px rgba(0,0,0,0.3);
+			-moz-box-shadow: inset 0px 10px 20px rgba(0,0,0,0.3);
+			box-shadow: inset 0px 10px 20px rgba(0,0,0,0.3);*/
+
+
+
+
+		}
+
+		footer.overlay {
+		    top:65px !important;
+		    height:100% !important;
+		    z-index:111 !important;
+		    background:#EEE !important;
+		}
+
+		footer p {
+		    padding: 10px 0 0 10px;
+		}
+
+		#Foundation {
+			position:absolute;
+			left:0;
+			right:0;
+			top:75px;
+			bottom:75px;
+		}
+
+		#Activities {
+		    overflow:hidden;
+			border-radius:5px;
+			z-index:100;
+			position: absolute;
+			left: 250px;
+			right: 20px;
+			top: 20px;
+			bottom: 0px;
+			background: #FFF;
+	
+			-webkit-box-shadow:  0 0px 126px rgba(0,0,0,1.55);
+			-moz-box-shadow:  0 0px 126px rgba(0,0,0,1.55);
+			box-shadow:  0 0px 126px rgba(0,0,0,1.55)
+	
+		}
+
+		#Activities section.activity-view {
+		    padding: 30px;
+		    margin-top: 10px;
+		    overflow: scroll;
+		    position: absolute;
+		    top: 62px;
+		    left: 0;
+		    right: 0px;
+		    bottom: 0px;
+		}
+
+		#Activities nav {
+			border-top-left-radius:5px;
+			border-top-right-radius:5px;
+			position:relative;
+		/*	margin:5px;*/
+			height:60px;
+			clear:both;
+		/*	min-height: 20px;*/
+		/*	padding: 19px;*/
+		/*	margin-bottom: 20px;*/
+			background-color: #f5f5f5;
+			border: 1px solid #e3e3e3;
+			-webkit-box-shadow: inset 0 -2px 26px rgba(0,0,0,0.15);
+			-moz-box-shadow: inset 0 -2px 26px rgba(0,0,0,0.15);
+			box-shadow: inset 0 -2px 26px rgba(0,0,0,0.15)
+			text-align:center;
+	
+			border-bottom:1px solid #CCC;
+
+		}
+
+		#Activities nav h2 {
+			display:inline;
+			line-height:62px;
+			padding-left:20px;
+			font-weight:200;
+		}
+
+		#Activities nav span {
+			display:inline-block;
+			position:absolute;
+			top:8px;
+			right:8px;
+		}
+
+
+
+
+		/*
+
+			TOOL BAR
+
+		*/
+		#Tools nav {
+			background:#333;
+		/*	border-top:1px solid #DDD;*/
+			height:100%;
+			color:#FFF;
+
+	
+		/*	-webkit-box-shadow: inset 0 -2px 50px rgba(0,0,0,0.3);
+			-moz-box-shadow: inset 0 -2px 50px rgba(0,0,0,0.3);
+			box-shadow: inset 0 -2px 50px rgba(0,0,0,0.3);*/
+
+		}
+
+		#Tools nav ul {
+			padding:0px;
+			margin:0px;
+		}
+
+		#Tools nav h3 {
+		/*	border-bottom:1px solid #444;*/
+			padding:20px;
+			margin:0px;
+			font-weight:500;
+		    color: #444;
+		    text-shadow: 0px 0px 15px #222;
+		}
+
+		#Tools nav ul li {
+			width:100%;
+		/*	border-bottom:1px solid #383838;*/
+		/*	border-top:1px solid #383838;*/
+			padding:20px 0;
+			text-indent:20px;
+			-webkit-box-shadow: inset 0 0px 36px rgba(0,0,0,0.1);
+			-moz-box-shadow: inset 0 0px 36px rgba(0,0,0,0.1);
+			box-shadow: inset 0 0px 36px rgba(0,0,0,0.1);
+			margin-bottom:8px;
+			text-overflow: ellipsis;
+		    min-width: 200px;
+
+
+			border-width: 0px;
+			border-color: rgba(0,0,0,0);
+
+
+			-webkit-box-sizing: border-box;
+			-moz-box-sizing: border-box;
+			box-sizing: border-box;
+
+			-webkit-transition: 0.7s ease;
+			-moz-transition: 0.7s ease;
+			-ms-transition: 0.7s ease;
+			-o-transition: 0.7s ease;
+		border-style: dashed;
+
+		/*	border-right:1px solid #FFF;*/
+	
+		}
+
+		@keyframes fadeInNavButton {
+		  from {
+		    background: black;
+		  }
+
+		  to {
+		    background: white;
+		  }
+		}
+
+
+
+		#Tools nav ul li:hover {
+			border-width: 0;
+			border-color: rgba(0, 0, 0, 0.5);
+			background: #FFF;
+		  animation-duration: 0.7s;
+		  animation-name: fadeInNavButton;
+			color:#333;
+			cursor:pointer;
+			-webkit-box-shadow: inset 0 2px 26px rgba(0,0,0,0.2);
+			-moz-box-shadow: inset 0 2px 26px rgba(0,0,0,0.2);
+			box-shadow: inset 0 2px 26px rgba(0,0,0,0.2);
+		}
+
+
+		#Tools nav ul li.active {
+	
+			color:#333;
+
+			background:#CCC;
+
+	
+			-webkit-box-shadow: inset 0 2px 26px rgba(0,0,0,0.1);
+			-moz-box-shadow: inset 0 2px 26px rgba(0,0,0,0.1);
+			box-shadow: inset 0 2px 26px rgba(0,0,0,0.1);
+
+		    	-webkit-transition: 0.7s ease;
+		    	-moz-transition: 0.7s ease;
+		    	-ms-transition: 0.7s ease;
+		    	-o-transition: 0.7s ease;
+		}
+
+		#Tools nav ul li.active:hover {
+			background:#FFF;
+			cursor:pointer;
+	
+	
+			-webkit-box-shadow: inset 0 2px 6px rgba(0,0,0,0.1);
+			-moz-box-shadow: inset 0 2px 6px rgba(0,0,0,0.1);
+			box-shadow: inset 0 2px 6px rgba(0,0,0,0.1);
+	
+			-webkit-box-shadow: inset 0 2px 26px rgba(0,0,0,0.1);
+			-moz-box-shadow: inset 0 2px 26px rgba(0,0,0,0.1);
+			box-shadow: inset 0 2px 26px rgba(0,0,0,0.1);
+		}
+
+
+
+
+
+
+
+
+
+		button{
+			cursor: pointer;
+			text-decoration:none;
+			border: 1px solid rgb(0, 153, 204);
+			padding: 10px 15px 10px 15px;
+			color:rgb(255, 255, 255);
+			font-size:15px;
+			font-family:arial, serif;
+			text-shadow: 0px 0px 3px rgb(0, 0, 0);
+			font-size: 15px;
+			border-radius:7px;
+		/*	-moz-border-radius:20px 20px 20px 20px;*/
+		/*	-webkit-border-radius:20px 20px 20px 20px;*/
+			box-shadow:0px 0px 63px rgba(255, 255, 255, 0.6);
+		/*	-moz-box-shadow:0px 0px 3px rgba(0, 0, 0, 0.3);*/
+		/*	-webkit-box-shadow:0px 0px 3px rgba(0, 0, 0, 0.3);*/
+		/*	background-color: rgb(0, 153, 255);
+			background-image:linear-gradient(-90deg, rgb(0, 204, 255), rgb(0, 153, 255));
+			background-image:-webkit-gradient(linear, 50% 0%, 50% 100%, from(rgb(0, 204, 255)), to(rgb(0, 153, 255)));
+			background-image:-moz-linear-gradient(-90deg, rgb(0, 204, 255), rgb(0, 153, 255));*/
+			background:#09F;
+			    	-webkit-transition: 0.7s ease;
+		        	-moz-transition: 0.7s ease;
+		        	-ms-transition: 0.7s ease;
+		        	-o-transition: 0.7s ease;
+		}
+		button:hover{
+			cursor: pointer;
+			text-decoration:none;
+			border: 1px solid rgb(0, 153, 204);
+			padding: 10px 15px 10px 15px;
+			color:rgb(255, 255, 255);
+			font-size:15px;
+			font-family:arial, serif;
+			text-shadow: 0px 0px 4px rgb(0, 0, 0);
+			font-size: 15px;
+			border-radius:10px;
+		/*	-moz-border-radius:20px 20px 20px 20px;
+			-webkit-border-radius:20px 20px 20px 20px;
+		*/	box-shadow:0px 0px 3px rgba(0, 0, 0, 0.3);
+			-moz-box-shadow:0px 0px 3px rgba(0, 0, 0, 0.3);
+			-webkit-box-shadow:0px 0px 3px rgba(0, 0, 0, 0.3);
+			background-color: rgb(0, 153, 255);
+			background-image:linear-gradient(-90deg, rgba(0, 204, 255, 0.8), rgba(0, 153, 255, 0.9));
+			background-image:-webkit-gradient(linear, 50% 0%, 50% 100%, from(rgba(0, 204, 255, 0.8)), to(rgba(0, 153, 255, 0.9)));
+			background-image:-moz-linear-gradient(-90deg, rgba(0, 204, 255, 0.8), rgba(0, 153, 255, 0.9));
+		}
+		button:active{
+			cursor: pointer;
+			text-decoration:none;
+			border: 1px solid rgb(0, 153, 204);
+			padding: 10px 15px 10px 15px;
+			color:rgb(255, 255, 255);
+			font-size:15px;
+			font-family:arial, serif;
+			text-shadow: 0px 0px 3px rgb(0, 0, 0);
+			font-size: 15px;
+			border-radius:20px 20px 20px 20px;
+			-moz-border-radius:20px 20px 20px 20px;
+			-webkit-border-radius:20px 20px 20px 20px;
+			box-shadow:0px 0px 3px rgba(0, 0, 0, 0.3);
+			-moz-box-shadow:0px 0px 3px rgba(0, 0, 0, 0.3);
+			-webkit-box-shadow:0px 0px 3px rgba(0, 0, 0, 0.3);
+			background-color: rgb(0, 153, 255);
+			background-image:linear-gradient(-90deg, rgb(0, 153, 255), rgb(0, 153, 255));
+			background-image:-webkit-gradient(linear, 50% 0%, 50% 100%, from(rgb(0, 153, 255)), to(rgb(0, 153, 255)));
+			background-image:-moz-linear-gradient(-90deg, rgb(0, 153, 255), rgb(0, 153, 255));
+		}
+
+
+		.well {
+			clear:both;
+			min-height: 20px;
+			padding: 19px;
+			margin-bottom: 20px;
+			background-color: #f5f5f5;
+			border: 1px solid #e3e3e3;
+			-webkit-border-radius: 4px;
+			-moz-border-radius: 4px;
+			border-radius: 4px;
+			-webkit-box-shadow: inset 0 1px 1px rgba(0,0,0,0.05);
+			-moz-box-shadow: inset 0 1px 1px rgba(0,0,0,0.05);
+			box-shadow: inset 0 1px 1px rgba(0,0,0,0.05);
+			text-align:center;
+		}
+
+		section.api-service-header h4 {
+		    border-bottom:1px solid #DDD;
+		    margin:0px;
+		    font-weight: 100;
+		    font-size: 30px;
+		    text-transform: uppercase;
+		    letter-spacing: 3px;
+		    text-align:left;
+		}
+
+		section.api-service-method span {
+		    font-size: 0.5em;
+		    letter-spacing: 1px;
+		    color: #AAA;
+		    padding-left: 2px;
+		}
+
+
+
+
+
+
+
+
+
+		table.hovertable {
+			font-family: verdana,arial,sans-serif;
+			font-size:11px;
+			color:#333333;
+			border-width: 1px;
+			border-color: #999999;
+			border-collapse: collapse;
+			width:100%;
+		}
+		table.hovertable th {
+			background-color:#FAFAFA;
+			border-width: 1px;
+			padding: 8px;
+			border-style: solid;
+			border-color: #DDD;
+			text-align:left;
+		}
+		table.hovertable tr {
+			background-color:#FCFCFC;
+		}
+		table.hovertable td {
+			border-width: 1px;
+			padding: 16px 8px;
+			border-style: solid;
+			border-color: #EEE;
+			border-right:1px solid #DDD;
+			font-weight: 100;
+		    font-size: 17px;
+		}
+
+		table.hovertable td:hover {
+		    background:#EFFFEE;
+		}
+
+
+
+
+
+
+
+
+		article.account-login-form {
+
+		    position:absolute;
+		    top:-100px;
+		    left:50%;
+		    margin-top:-150px;
+		    height:0px;
+		    width:250px;
+		    overflow:hidden;
+		    padding:100px;
+
+		    border:1px solid #DDD;
+		    margin-left:-200px;
+		    border-radius:5px;
+		    background-color:#FFF;
+
+		    -webkit-transition: 0.7s ease;
+		    -moz-transition: 0.7s ease;
+		    -ms-transition: 0.7s ease;
+		    -o-transition: 0.7s ease;
+
+
+		    box-shadow: 0 0px 1px rgba(0,0,0,0.2);
+		}
+
+		article.account-login-form.overlay {
+		    z-index:200;
+		    height:100px;
+		    top:50%;
+
+		    box-shadow: 0 0px 516px rgba(0,0,0,0.7);
+		}
+
+
+		article.account-login-form legend {
+		    margin: 0;
+		    padding-bottom: 15px;
+		    text-indent: 0px;
+		    font-size: 20px;
+		}
+
+		article.account-login-form input {
+		    float:right;
+		}
+
+		article.account-login-form div {
+		    clear:both;
+		}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+		.cf:before, .cf:after{
+		    content:"";
+		    display:table;
+		}
+
+		.cf:after{
+		    clear:both;
+		}
+
+		.cf{
+		    zoom:1;
+		}
+
+
+
+
+
+
+
+		/* Form wrapper styling */
+		.form-wrapper {
+		    width: 650px;
+		    padding: 15px 15px 10px 15px;
+		    margin: 10px auto 50px auto;
+		    background: #CCC;
+
+		    border-radius: 10px;
+		    box-shadow: 0 1px 1px rgba(0,0,0,.4) inset, 0 1px 0 rgba(255,255,255,.2);
+		}
+
+		/* Form text input */
+
+		.form-wrapper input {
+		    width: 530px;
+		    height: 20px;
+		    padding: 10px 5px;
+		    float: left;
+		    font: bold 15px 'lucida sans', 'trebuchet MS', 'Tahoma';
+		    border: 0;
+		    background: #eee;
+		    border-radius: 3px 0 0 3px;
+		}
+
+		.form-wrapper input:focus {
+		    outline: 0;
+		    background: #fff;
+		    box-shadow: 0 0 2px rgba(0,0,0,.8) inset;
+		}
+
+		.form-wrapper input::-webkit-input-placeholder {
+		   color: #999;
+		   font-weight: normal;
+		   font-style: italic;
+		}
+
+		.form-wrapper input:-moz-placeholder {
+		    color: #999;
+		    font-weight: normal;
+		    font-style: italic;
+		}
+
+		.form-wrapper input:-ms-input-placeholder {
+		    color: #999;
+		    font-weight: normal;
+		    font-style: italic;
+		}
+
+		/* Form submit button */
+		.form-wrapper button {
+		    overflow: visible;
+		    position: relative;
+		    float: right;
+		    border: 0;
+		    padding: 0;
+		    cursor: pointer;
+		    height: 40px;
+		    width: 110px;
+		    font: bold 15px/40px 'lucida sans', 'trebuchet MS', 'Tahoma';
+		    color: #fff;
+		    text-transform: uppercase;
+		    background: #09F;
+		    border-radius: 0 3px 3px 0;
+		    text-shadow: 0 -1px 0 rgba(0, 0 ,0, .3);
+		}
+
+		.form-wrapper button:hover{
+		    background: #09F;
+		}
+
+		.form-wrapper button:active,
+		.form-wrapper button:focus{
+		    background: #09F;
+		    outline: 0;
+		}
+
+		.form-wrapper button:before { /* left arrow */
+		    content: '';
+		    position: absolute;
+		    border-width: 8px 8px 8px 0;
+		    border-style: solid solid solid none;
+		    border-color: transparent #09F transparent;
+		    top: 12px;
+		    left: -6px;
+		}
+
+		.form-wrapper button:hover:before{
+		    border-right-color: #09F;
+		}
+
+		.form-wrapper button:focus:before,
+		.form-wrapper button:active:before{
+		        border-right-color: #09F;
+		}
+
+		.form-wrapper button::-moz-focus-inner { /* remove extra button spacing for Mozilla Firefox */
+		    border: 0;
+		    padding: 0;
+		}
+
+
+
+
+
+
+
+
+		#Activities nav span.star-rating {
+		    position: relative;
+		    margin-left: 20px;
+		    top: 18px;
+		    font-size: 43px;
+		    color: orange;
+		}
+		</style>
+		
+	</head>
+	
+<!-- 	<aspects>
+	
+		
+	
+	</aspects>
+	 -->
+	<body id="wrapper">
+		
+
+		<section data-controller="plant-controller" data-entity="plant-entity" data-instance-id="12312312312"></section>
+
+		<header>
+		    <hgroup>
+		        <h1 data-widget="server-health-controller" data-group="server-health">
+		            Nowtary
+		        </h1>
+		    </hgroup>
+
+
+		    <datalist data-widget="application-controller" data-group="activity">
+
+		        <figure data-widget="entity-library" data-group="activity">
+		        </figure>
+		        <figure data-widget="personas" data-group="activity">
+		        </figure>
+		        <figure data-widget="activities" data-group="activity">
+		        </figure>
+		        <figure data-widget="tasks" data-group="activity">
+		        </figure>
+
+		        <figure data-widget="logger" data-group="navigation">
+		        </figure>
+
+		        <figure data-widget="logger" data-group="user-account">
+		        </figure>
+
+		        <figure data-widget="user-account-controller" data-group="user-account"></figure>
+
+		    </datalist>
+		</header>
+
+		<article id="Foundation">
+		    <section id="Activities" data-widget="activity-controller" data-group="activities">
+		        <nav>
+		            <h2 data-widget="activity-title" data-group="activities">
+		            </h2>
+		            <span class="star-rating" data-widget="star-rating" data-min="0" data-max="5" data-value="0.3"></span>
+		            <span data-widget="call-to-action-controls" data-group="call-to-action">
+		            </span>
+
+		        </nav>
+		        <section id="my-account" class="activity-view">
+		            <datalist data-widget="call-to-action-configuration" data-group="call-to-action" data-for="my-account">
+
+		                <!--<figure data-label="Add Entity" data-action="add a new entity to the entity library" data-type="call-to-action" data-outbound-group="entity-library-controller">-->
+		                <!--</figure>-->
+
+		            </datalist>
+
+		            <fieldset class="inputs">
+		                <div class="row">
+		                    <div class="span4">
+		                        <div class="string control-group required stringish" id="user_first_name_input"><label
+		                                class=" control-label" for="user_first_name">First name*</label>
+
+		                            <div class="controls"><input id="user_first_name" maxlength="255"
+		                                                         name="user[first_name]" type="text" value="">
+
+		                            </div>
+		                        </div>
+		                    </div>
+		                    <div class="span4">
+		                        <div class="string control-group required stringish" id="user_last_name_input"><label
+		                                class=" control-label" for="user_last_name">Last name*</label>
+
+		                            <div class="controls"><input id="user_last_name" maxlength="255" name="user[last_name]"
+		                                                         type="text" value="">
+
+		                            </div>
+		                        </div>
+		                    </div>
+		                </div>
+		                <div class="row">
+		                    <div class="span4">
+		                        <div class="string control-group required stringish" id="user_username_input"><label
+		                                class=" control-label" for="user_username">Username*</label>
+
+		                            <div class="controls"><input id="user_username" maxlength="255" name="user[username]"
+		                                                         type="text" value="">
+
+		                                <span class="help-inline">You can log in to Notary using your username or your email address.</span>
+		                            </div>
+		                        </div>
+		                    </div>
+		                    <div class="span4">
+		                        <div class="email control-group required stringish" id="user_email_input"><label
+		                                class=" control-label" for="user_email">Email*</label>
+
+		                            <div class="controls"><input id="user_email" maxlength="255" name="user[email]"
+		                                                         type="email" value="">
+
+		                            </div>
+		                        </div>
+		                    </div>
+		                </div>
+
+		            </fieldset>
+		            <div class="well well-small" style="text-align:left; margin-top:30px;">
+		                <fieldset class="form-actions">
+		                    <button class="call-to-action">Save My Account</button>
+		                    <a href="" class="btn btn-link" style="margin-left:10px">Cancel</a>
+		                </fieldset>
+		            </div>
+
+		        </section>
+
+		        <section id="my-records" data-widget="my-records-controller" data-group="my-records-controller"
+		                 class="activity-view">
+		            <datalist data-widget="call-to-action-configuration" data-group="call-to-action" data-for="my-records">
+
+		                <figure data-label="Search Records" data-action="search for a record" data-type="call-to-action"
+		                        data-outbound-group="my-records-controller">
+		                </figure>
+		                <figure data-label="Add Record" data-action="add a record" data-type="call-to-action"
+		                        data-outbound-group="my-records-controller">
+		                </figure>
+
+		                <figure data-label="Edit Record" data-action="edit a record" data-type="call-to-action"
+		                        data-outbound-group="my-records-controller">
+		                </figure>
+
+
+		            </datalist>
+		            <form class="form-wrapper cf">
+		                <input type="text" placeholder="Enter Labels..." required>
+		                <button type="submit">Search</button>
+		            </form>
+		            <div class="well">
+		                <button>Writtings</button>
+		                <button>Music</button>
+		                <button>Photos</button>
+		                <button>Video</button>
+
+		            </div>
+
+		        </section>
+
+		        <section id="api-documentation" class="activity-view" data-widget="api-documentation-controller"
+		                 data-group="api-documentation-controller" data-endpointpath="health/endpoints">
+
+		            <datalist data-widget="call-to-action-configuration" data-group="call-to-action"
+		                      data-for="api-documentation">
+
+		                <figure data-label="Call Method" data-action="call the active method in the api documentation"
+		                        data-type="call-to-action" data-outbound-group="api-documentation-controller">
+		                </figure>
+
+		            </datalist>
+
+		        </section>
+
+		        <section id="api-console" class="activity-view">
+		            <datalist data-widget="call-to-action-configuration" data-group="call-to-action" data-for="api-console">
+
+		                <figure data-label="Clear Console" data-action="clear the api console" data-type="call-to-action"
+		                        data-outbound-group="api-console-controller">
+		                </figure>
+
+		            </datalist>
+
+		        </section>
+		    </section>
+		    <aside id="Tools">
+		        <div id="tool-drawer-handler" data-widget="drawer-handle" data-group="activities">
+		            .
+		            <br/>
+		            .
+		            <br/>
+		            .
+		        </div>
+
+		        <nav data-widget="navigation-controller" data-group="activities">
+		            <h3>
+		                Tools
+		            </h3>
+		            <ul>
+		                <li data-widget="event-trigger" data-event="click" data-message="go-to-my-records"
+		                    data-group="activities">
+		                    My Records
+		                </li>
+		                <li data-widget="event-trigger" data-event="click" data-message="go-to-my-account"
+		                    data-group="activities">
+		                    My Account
+		                </li>
+		                <li class="active" data-widget="event-trigger" data-event="click"
+		                    data-message="go-to-api-documentation" data-group="activities">
+		                    API Documentation
+		                </li>
+		                <li data-widget="event-trigger" data-event="click" data-message="go-to-api-console"
+		                    data-group="activities">
+		                    API Console
+		                </li>
+		            </ul>
+		        </nav>
+		    </aside>
+
+		</article>
+
+		<article data-widget="account-login-form" data-group="dialog" class="account-login-form overlay">
+		    <datalist>
+		        <figure data-widget="conduit" data-group="dialog" data-outlet="user-account">
+		        </figure>
+
+		        <figure data-widget="conduit" data-group="user-account" data-outlet="dialog">
+		        </figure>
+		    </datalist>
+		    <section>
+		        <fieldset>
+		            <legend>Account Login</legend>
+		            <div>
+		                <span>Username</span><input id="username-input" type="text" />
+		            </div>
+		            <div>
+		                <span>Password</span><input id="password-input" type="password" />
+		            </div>
+		            <div>
+		                <button class="call-to-action" id="login-button">Login</button>
+		                <button class="call-to-action" id="register-button">Register</button>
+		            </div>
+		        </fieldset>
+		    </section>
+		</article>
+
+
+		<!--<section>-->
+		    <!--<fieldset>-->
+		        <!--<legend>Account Controller</legend>-->
+		        <!--<model>-->
+		            <!--<entity>-->
+		                <!--<name>Account</name>-->
+		                <!--<properties>-->
+		                    <!--<property>-->
+		                        <!--<name>Username</name>-->
+		                        <!--<type>String</type>-->
+		                        <!--<range>-->
+		                            <!--<min>1</min>-->
+		                            <!--<max>100</max>-->
+		                        <!--</range>-->
+		                    <!--</property>-->
+		                    <!--<property>Password</property>-->
+		                <!--</properties>-->
+		            <!--</entity>-->
+
+		        <!--</model>-->
+		        <!--<actions>-->
+
+		        <!--</actions>-->
+		        <!--<reactions>-->
+
+		        <!--</reactions>-->
+		    <!--</fieldset>-->
+		<!--</section>-->
+
+		<footer data-widget="application-overlay" data-group="dialog" class="overlay">
+		    <p>
+		        Powered by Collaborate &copy; Scott Byrns 2013
+		    </p>
+		</footer>
+
+		</div>
+		
+		
+		<section data-widget="account-controller" data-group="account-controller">
+			<input data-widget="user-input" data-type="string" data-group="account-controller" data-channel="username" />
+			<input data-widget="user-input" data-type="password" data-group="account-controller" data-channel="password" />
+			<button data-widget="user-action" data-event="click" data-group="account-controller" data-channel="login user">   
+				Login
+			</button>
+		</section>
+		
+		<section data-widget="virtual-entity-dao" data-group="virtual-entity-dao">
+			<button data-widget="user-action" data-event="click" data-group="virtual-entity-dao" data-channel="create entity" data-message="farm">   
+				Create Entity
+			</button>
+			<button data-widget="user-action" data-event="click" data-group="virtual-entity-dao" data-channel="read entity" data-message="plant">   
+				Read Entity
+			</button>
+			<button data-widget="user-action" data-event="click" data-group="virtual-entity-dao" data-channel="update entity" data-message="field">   
+				Update Entity
+			</button>
+			<button data-widget="user-action" data-event="click" data-group="virtual-entity-dao" data-channel="delete entity" data-message="crop">   
+				Delete Entity
+			</button>
+			
+			<button data-widget="user-action" data-event="click" data-group="voice" data-channel="speak-male" data-message="hello">   
+				Speak
+			</button>
+			
+		</section>
+	
+		<section data-widget="entity-builder" data-group="entity-builder">
+			<pre>
+				<h1>                                                                                                                                                                                         
+					<%=entityName %>                                                                                                                                                                         
+					<button data-widget="user-action" data-event="click" data-group="<%=group %>-behavior" data-channel="show create new property dialog">   
+						Add Behavior                                                                                                             
+					</button>                                                                                                                                                                                
+					<button data-widget="user-action" data-event="click" data-group="<%=group %>-property" data-channel="show create new property dialog">     
+						Add Property                                                                                                
+					</button>                                                                                                       
+				</h1>                                                                                                               
+				<ul>                                                                                                                
+				   <% for(var i = 0; i < properties.length; i += 1) { %>                                                            
+					   <li data-widget="list-element" data-label="<%=properties[i].name %>">                                                                                    
+		               		
+					   </li>            
+				   <% } %>              
+				</ul>				
+			</pre>
+		</section>
+		<section data-widget="create-dialog" data-group="entity-builder-property" data-name="property-dialog">
+			<pre>
+				<h1><%=title %></h1>
+				<p><%=description %></p>
+				<section data-widget="form" data-group="entity-builder">
+					<form>
+						<code>
+							{
+								"fields":[
+								{
+									"type":"text",
+									"label":"Name",
+									"example": "e.g. 03/09/1987",
+									"validators": ["alpha", "date", "number"]
+								},
+								{
+									"type":"list",
+									"label":"Type",
+									"data": ["one", "two", "three"]					
+								},
+								{
+									"type":"text",
+									"label": "Purpose"					
+								}
+								]
+							}
+						</code>
+						<pre>
+							<% for (var field in fields) { %>
+								<div>
+									<span><label><%=fields[field].label %></label></span>
+									<span><input type="text" name="<%=fields[field].label %>" /></span>
+								</div>
+							<% } %>
+						</pre>
+					</form>
+				</section>
+				<div>
+					<button data-widget="user-action" data-event="click" data-group="<%=group %>" data-channel="user did press the save button" type="submit">Done</button>
+					<button data-widget="user-action" data-event="click" data-group="<%=group %>" data-channel="user did press the cancel button" type="submit">Cancel</button>
+				</div>
+
+			</pre>
+		</section>
+
+
+		<section data-widget="create-dialog" data-group="entity-builder-behavior" data-name="behavior-dialog">
+			<pre>
+				<h1>Create Behavior</h1>
+				<p>Add information about the behaviors this entity can exhibit.</p>
+				<section data-widget="form" data-group="entity-builder">
+					<form>
+						<code>
+							{
+								"fields":[
+								{
+									"type":"text",
+									"label":"Actions Name",
+									"example": "e.g. 03/09/1987",
+									"validators": ["alpha", "date", "number"]
+								},
+								{
+									"type":"list",
+									"label":"Return Type",
+									"data": ["one", "two", "three"]					
+								},
+								{
+									"type":"text",
+									"label": "Purpose"					
+								}
+								]
+							}
+						</code>
+						<pre>
+							<% for (var field in fields) { %>
+								<div>
+									<span><label><%=fields[field]["actions name"] %></label></span>
+									<span><input type="text" name="<%=fields[field].label %>" /></span>
+								</div>
+							<% } %>
+						</pre>
+					</form>
+				</section>
+				<div>
+					<button data-widget="user-action" data-event="click" data-group="<%=group %>" data-channel="user did press the save button" type="submit">Done</button>
+					<button data-widget="user-action" data-event="click" data-group="<%=group %>" data-channel="user did press the cancel button" type="submit">Cancel</button>
+				</div>
+
+			</pre>
+		</section>
+	
+	
+
+
+
+
+	
+
+
+		
+		<script>
+		
+ 
+		var DOMWindow = window;
+		var DOMDocument = document;
+		
+		socket.on("connect", function () {
+	
+			console.log("Socket Connected.");
+	
+			window.$handle = function (group) {
+				if (group == undefined) {
+					throw new Error("A group identifier must be provided when handling messages.");
+					return;
+				}
+				console.log("Registering handlers for group: " + group);
+			
+				socket.emit("register handler", {group:group});
+			
+				return {
+					with: function (action) {
+						console.log("Attaching callback method to group.");
+						socket.on(group, function (data) {
+							console.log(data);
+							// Foundation.MessageController.sendMessage(group, data);
+							if (action === undefined) {
+								return;
+							}
+							else {
+								console.log("Forwarding socket message to callback.");
+								if (data.channel) {
+									$to("voice").say({channel:"speak-male", message:group + " i say to you... " + data.channel});
+								}
+								action(data);
+							}
+						});
+					}
+				}
+			}
+
+
+	
+
+	
+			window.$to = function (group) {
+				// socket.emit("register handler", {group:group});
+				return {
+					say: function (msg) {
+						socket.emit(group, msg);
+						Foundation.MessageController.sendMessage(group, msg);
+					}
+				}
+			}
+	
+	
+			window.$with = function (controller) {
+				console.log("With:" + controller);
+				return {
+					and: function (context) {
+						console.log("And: " + context);
+						return {
+							resolve: function (requirement) {
+								console.log("resolve:" + requirement);
+								return {
+									for: function (entity) {
+										$to(controller).say({channel:requirement, data:entity, context:context});
+										// socket.emit(controller, {channel:requirement, data:entity});
+										// Foundation.MessageController.sendMessage(controller, entity, requirement);
+									}
+								}
+							}
+						}				
+					}
+				}
+			}
+			
+		
+			var WidgetFramework = function (DOMWindow, DOMDocument) {
+
+
+
+
+				if (!DOMWindow.LiveWidgets) {
+					var TemplateEngine = function () {
+						/* Create the cache object */
+						var cache = {},
+						_template;
+						/* Define the alias for the tmpl method and define the tmpl method */
+						_template = function tmpl(template, data){
+							/* Figure out if we're getting a template, or if we need to
+							 load the template - and be sure to cache the result. */
+							var fn = !/\W/.test(template) ? cache[template] = cache[template] || _template(template) :
+							/* Generate a reusable function that will serve as a template
+							 generator (and which will be cached). */
+							new Function("obj",
+							"var p=[],print=function(){p.push.apply(p,arguments);};" +
+							/* Introduce the data as local variables using with(){} */
+							"with(obj){p.push('" +
+							/*  Convert the template into pure JavaScript */
+							template.replace(/[\r\t\n]/g, " ").split("<?").join("\t").replace(/((^|\?>)[^\t]*)'/g, "$1\r").replace(/\t=(.*?)\?>/g, "',$1,'").split("\t").join("');").split("?>").join("p.push('").split("\r").join("\\'") + "');}return p.join('');");
+							/* Provide some basic currying to the user */
+							return data ? fn( data ) : fn;
+						};
+						return _template;
+					}();
+			
+					var Warehouse = function () {
+						this.store = DOMWindow.localstore;
+					};
+			
+					var getProperty = function (propertyName) {
+						this.say("this is the value of " + propertyName, this.model[propertyName]);
+					};
+			
+					var setProperty = function (propertyName, value) {
+						this.model[propertyName] = value;
+						this.say("this is the value of " + propertyName, this.model[propertyName]);
+					};
+			
+					var ManagedModel = function (model) {
+						this.model = model;
+						var self = this;
+						console.log(model);
+						for (var property in model) {
+							if (model.hadOwnProperty(property)) {
+								console.log(property);
+								self["get_" + property] = Helpers.bind(function (getProperty, property) {
+									return function () {
+										getProperty.apply(this, [property]);
+									};
+								}.apply(this, [getProperty, property]), this);
+
+								self["set_" + property] = Helpers.bind(function (setProperty, property) {
+									return function (value) {
+										setProperty.apply(this, [property, value]);
+									};
+								}.apply(this, [setProperty, property]), this);
+						
+							}
+						}
+					};
+			
+					/**
+					 * Class to manage and coordinate the communication between a pool of registered listeners.
+					 * @returns undefined
+					 */
+					var MessageController = function () {
+						this.listenerPool = {};
+					};
+					/**
+					 * Register a new listener
+					 * @param {String} key Group key name
+					 * @param {String|Number} UID Unique value to register a callback
+					 * @param {Function} callback Method to be called with a message.
+					 * @returns undefined
+					 */
+					MessageController.prototype.registerListener = function (key, UID, callback) {
+						if (!this.listenerPool[key]) {
+							this.listenerPool[key] = {};
+							// Attempting to handle the registration here causes the controller to fail.
+							// Echo?
+							// socket.emit("register handler", {group:group});
+							// $handle(key);
+						}
+						this.listenerPool[key][UID] = callback;
+					};
+					/**
+					 * Send a message to a listener pool
+					 * @param {String} targetListener Group key name to send the message to.
+					 * @param {Any} message Message to send to the target group.
+					 * @returns undefined
+					 */
+					MessageController.prototype.sendMessage = function (targetListener, message) {
+						try {
+							var target = this.listenerPool[targetListener];
+							var hasBroadcastToSocket = false;
+							for (callback in target) {
+								// console.log(target[callback]);
+								if (target.hasOwnProperty(callback)) {
+									// console.log(message.channel)
+									if (!hasBroadcastToSocket) {
+										hasBroadcastToSocket = true;
+										console.warn("Sending message to socket");
+										$to("voice").say({channel:"speak", message:targetListener + " here ..." + message.channel});
+										$to(message.channel).say(message);
+									}
+									target[callback](message);
+								}
+							}
+						}
+						catch (e) {
+						    console.warn("A message failed to send.");
+			                console.log(e);
+						}
+					};
+	
+					MessageController = new MessageController();
+	
+					var Helpers = {
+						/**
+						 * Bind an execution context to a method and return it
+						 * @param {Function} method Method to bind an execution context to.
+						 * @param {Context} context Execution context to bind to method.
+						 * @TODO Bind the context with a prototype like bind technique
+						 */
+						bind: function (method, context) {
+							return function () {
+								method.apply(context, arguments);
+							};
+						},
+						/**
+						 * Clone an object so that all properties are new instances of the objects
+						 * rather than pointers to the original.
+						 * @param {Object} from Object to clone
+						 * @param {Context} scope Execution context to bind to all methods found
+						 * in the object being cloned.
+						 * @TODO Consider removing the execution context binding and creating a
+						 * helper to do it. It falls out of the scope of "deep clone"ing but saves
+						 * on lines of code. Is the trade off worth the unusal behavior?
+						 */
+						deepClone: function (from, scope) {
+							var to = {};
+							for (var i in from) {
+								if (from.hasOwnProperty(i)) {
+									if (typeof from[i] === 'object') {
+										if (from[i] instanceof Array) {
+											to[i] = [];
+											for (var val in from[i]) {
+												if (from[i].hasOwnProperty(val)) {
+													to[i][val] = from[i][val];
+												}
+											}
+										}
+										else {
+											to[i] = deepClone(from[i], scope);
+										}
+									}
+									else if (typeof from[i] === 'function' && scope) {
+										to[i] = Helpers.bind(from[i], scope);
+									}
+									else {
+										to[i] = from[i];
+									}
+								}
+							}
+							return to;
+						},
+						/**
+						 * Check to make sure the controller does not have have any properties that will conflict with
+						 * the widgets properties and method.
+						 * @param {Object} controller Controller provided in an addWidget call.
+						 * @returns {Boolean} True if the controller is fine, false if it will conflict with the widget.
+						 */
+						validateController: function (controller) {
+							if (controller.reinit || controller.sendMessage || controller.model || controller.properties || controller.controller || controller.element || controller.behaviors || controller.reactions) {
+								return false;
+							}
+							else {
+								return true;
+							}
+						},
+						/**
+						 * Check for missing properties on a widget and add them.
+						 * @param {Object} widget Widget to clean up.
+						 * @returns {Object} a clean version of the widget
+						 */
+						cleanWidget: function (widget) {
+							widget.constructor = widget.constructor || function () {};
+							widget.reinit = widget.reinit || function () {};
+
+							widget.behaviors = widget.behaviors || {};
+							widget.reactions = widget.reactions || {};
+							widget.properties = widget.properties || widget.model || {};
+
+							widget.template = widget.template || widget.view || undefined;
+
+							widget.model = widget.model || widget.properties || {};
+							widget.properties = widget.model;
+							widget.controller = widget.controller || {};
+							return widget;
+						},
+						/**
+						 * Create the widget constructor. We capture the model in the scope of the
+						 * constroctur, add the element property, controller methods with scope
+						 * correction, call the widget constructor in the scope of this constructor,
+						 * register a listener for grouped widgets, and call reinit.
+						 * @param {Object} widget Our widget we are creating a class for.
+						 * @returns undefined
+						 */
+						buildWidgetConstructor: function (widget) {
+							return function (element) {
+								try {
+									this.model = ManagedModel.call(this, Helpers.deepClone(widget.model, this));
+								}
+								catch(e) {
+									this.model = Helpers.deepClone(widget.model, this);
+								}
+								this.properties = this.model;
+								for (var i = 0, len = element.attributes.length; i < len; i += 1) {
+									var name = element.attributes[i].name;
+									if (name.indexOf('data-') > -1 && name !== 'data-widget-id' && name !== 'data-widget' && name !== 'data-template') {
+										this.model[name.replace('data-', '')] = element.getAttribute(name);
+										this.properties[name.replace('data-', '')] = element.getAttribute(name);
+									}
+								}
+								this.element = element;
+								this.behaviors = Helpers.deepClone(widget.behaviors, this);
+								this.reactions = Helpers.deepClone(widget.reactions, this);
+								this.controller = Helpers.deepClone(widget.controller, this);
+						
+								try {
+									if (this.element.getElementsByTagName("pre")[0] !== "undefined") {								
+								
+										var cachedTemplates = [];									
+								
+										if (this.element.getElementsByTagName("pre")[0].getElementsByTagName("pre").length > 0) {
+									
+											var nestedTemplates = this.element.getElementsByTagName("pre")[0].getElementsByTagName("pre");
+									
+											for (var i = 0; i < nestedTemplates.length; i += 1) {
+												cachedTemplates[i] = nestedTemplates[i].innerHTML;
+												nestedTemplates[i].innerHTML = "{CACHEID=" + i + "}";
+											}
+										}
+								
+										this.template = this.element.getElementsByTagName("pre")[0].innerHTML.split("&lt;%").join("<?").split("%&gt;").join("?>").split("&lt;").join("<").split("&gt;").join(">");
+								
+										for (var i = 0; i < cachedTemplates.length; i += 1) {
+											this.template = this.template.replace("{CACHEID="+i+"}", cachedTemplates[i]);
+										}
+										// alert(this.template);
+									}							
+								}
+								catch (e) {
+									// console.error(e);
+									/* Muck the error. If we dont have a template we dont have a template. */
+								}
+						
+								// socket.emit("register handler", {group:this.element.getAttribute("data-widget-id")});
+						
+								// $handle(this.element.getAttribute("data-widget-id")).with(Helpers.bind(function (msg) {
+								// 	console.log("\n\n**********DATA DID RETURN*******\n\n");
+								// 	$to("logger").say(msg);
+								// 	this.sendMessage(msg);
+								// }, this));
+						
+								// socket.emit("register handler", {group:this.element.getAttribute("data-widget-id")});
+
+								widget.constructor.call(this);
+								// console.log(this);
+								if (this.model.group) {
+
+									
+									var callback = Helpers.bind(function (messageObject) {
+								
+										socket.emit(this.model.group, messageObject);
+								
+										for (var index in this.behaviors) {
+											if (index === messageObject.channel) {
+												this.behaviors[index](messageObject.message);
+											}
+										}
+
+										for (var index in this.reactions) {
+
+											if (index === messageObject.channel) {
+												this.reactions[index](messageObject.message);
+											}
+										}
+								
+										this.handleMessage(messageObject.message, messageObject.channel);
+									}, this);
+									
+									var otherCallback = Helpers.bind(function (message) {
+										MessageController.sendMessage(this.model.group, message);
+									}, this);
+									
+									socket.groups = socket.groups || {};
+									if (socket.groups[this.model.group] == true) {
+
+									}
+									else {
+										socket.groups[this.model.group] = true;
+										// socket.emit("register handler", {group:this.model.group});									
+										$handle(this.model.group).with(otherCallback);
+									}
+									
+									$handle(this.element.getAttribute("data-widget-id")).with(otherCallback);
+									
+									MessageController.registerListener(this.model.group, Math.floor(Math.random() * new Date()), callback);
+								}
+				
+								this.reinit();
+								this.say("widget did render");
+							};
+						}
+					};
+	
+					var Augments = {
+						/**
+						 * Method to send a message to a registered listener pool.
+						 * @param {All} message Message to be sent to registered listeners, this can be any type of object.
+						 * @param {String} channel Channel that can be used to filter messages for requests.
+						 */
+						sendMessage: function (message, channel) {
+							if (!channel) {
+								// $to("voice").say({channel:"speak", message:message});
+								// console.log();
+								MessageController.sendMessage(this.model.group, {
+									message: {},
+									channel: message,
+									context: this.element.getAttribute("data-widget-id")
+								});
+						
+								// $to(this.model.group).say({
+								// 	message: {},
+								// 	channel: message,
+								// 	context: this.element.getAttribute("data-widget-id")
+								// });
+						
+								// // console.log(this.element.getAttribute("data-widget-id"));
+	// 							$handle(this.element.getAttribute("data-widget-id")).with(Helpers.bind(function (msg) {
+	// 								// $to("logger").say(msg);
+	// 								// this.element.getAttribute("data-widget-id")
+	// 								console.log("Widget Callback:");
+	// 								console.log(msg);
+	// 								MessageController.sendMessage(this.model.group, {
+	// 									message: {},
+	// 									channel: msg,
+	// 									context: this.element.getAttribute("data-widget-id")
+	// 								});
+	// 							}, this));	
+								// $handle(this.element.getAttribute("data-widget-id")).with(Helpers.bind(function (messageObject) {
+								// 	console.log("Message callback for widget with id: #" + this.element.getAttribute("data-widget-id"));
+								// 	this.sendMessage(messageObject, this.model.group);
+								// 	// $to("logger").say({message:messageObject, group: this.model.group});
+								// }, this));
+						
+								// .with(function (message) {
+								// 	$to("logger").say("Translating: " + message.translate);
+								// });
+								// 
+								// MessageController.registerListener(this.element.getAttribute("data-widget-id"), this.element.getAttribute("data-widget-id"), Helpers.bind(function (messageObject) {
+								// 	this.handleMessage(messageObject, this.model.group);
+								// }, this));
+						
+						
+								// $to(channel).say(message);
+								// Foundation.MessageController.sendMessage(group, msg);
+						
+								// $with(group).and(this.element.getAttribute("data-widget-id")).resolve(channel).for(message);
+						
+							}
+							else {
+								MessageController.sendMessage(this.model.group, {
+									message: message,
+									channel: channel
+								});							
+							}
+
+						},
+						/**
+						 * Replace the innerHTML of the widget element with a rendered template
+						 * @returns undefined
+						 */
+						renderTemplate: function () {
+							this.element.innerHTML = TemplateEngine(this.template, this.properties);
+						}
+					};
+					/**
+					 * LiveWidgets
+					 * @param {window} DOMWindow window global reference
+					 * @param {document} DOMDOcument DOM Document
+					 */
+					var LiveWidgets = function (DOMWindow, DOMDocument) {
+						this.widgets = {};
+						this.widgetInstances = {};
+					};
+					/**
+					 * Add a new widget module to the widgets object.
+					 * @param {Object} widgetModule Object containing the widget description.
+					 */
+					LiveWidgets.prototype.addWidget = function (widgetModule) {
+						console.log(widgetModule);
+						widgetModule = Helpers.cleanWidget(widgetModule);
+		
+						if (!widgetModule.name) {
+							return false;
+						}
+		
+						if (!Helpers.validateController(widgetModule.controller)) {
+							return false;
+						}
+		
+						this.widgets[widgetModule.name] = Helpers.buildWidgetConstructor(widgetModule);
+		
+						this.widgets[widgetModule.name].prototype.handleMessage = widgetModule.controller.handleMessage || function () {};
+		
+						this.widgets[widgetModule.name].prototype.template = widgetModule.template || widgetModule.view || false;
+						this.widgets[widgetModule.name].prototype.sendMessage = Augments.sendMessage;
+						this.widgets[widgetModule.name].prototype.say = Augments.sendMessage;
+						this.widgets[widgetModule.name].prototype.reinit = (function (reinit) {
+							return function () {
+								if (this.template) {
+									this.renderTemplate();
+								}
+								reinit.call(this);
+							};
+						})(widgetModule.reinit);
+		
+						this.widgets[widgetModule.name].prototype.renderTemplate = Augments.renderTemplate;
+					
+					};
+					/**
+					 * Extend an existing widget.
+					 * @param {String} widgetName Existing widget to be extended
+					 * @param {Object} extention Widget object to extend the existing widget with.
+					 */
+					LiveWidgets.prototype.extendWidget = function (widgetName, extention) {
+		
+						if (!extention.reinit) {
+							extention.reinit = this.widgets[widgetName].prototype.reinit;
+						}
+		
+						extention = Helpers.cleanWidget(extention);
+		
+						if (!extention.name) {
+							return false;
+						}
+		
+						if (!Helpers.validateController(extention.controller)) {
+							return false;
+						}
+		
+						this.widgets[extention.name] = function (element) {
+							this.widgets[widgetName].call(this, element);
+							extention.constructor.call(this, element);
+						};
+		
+						this.widgets[extention.name].prototype = this.widgets[widgetName].prototype;
+		
+						this.widgets[extention.name].prototype.handleMessage = extention.controller.handleMessage || this.widgets[widgetName].prototype.handleMessage;
+						this.widgets[extention.name].prototype.reinit = (function (reinit) {
+							return function () {
+								if (this.template) {
+									this.renderTemplate();
+								}
+								reinit.call(this);
+							};
+						})(extention.reinit);
+					};
+					/**
+					 * Set every thing up to prepare to create an instance of the widget.
+					 * @param {DOM} element DOM element that a widget will be deployed for.
+					 */
+					LiveWidgets.prototype.initializeWidget = function (element) {
+						if (!this.widgets[element.getAttribute('data-widget')]) {
+							return false;
+						}
+						var UID = Math.floor(new Date()*Math.random());
+						element.setAttribute('data-widget-id', UID);
+						this.widgetInstances[UID] = this.instantiateWidget(element, element.getAttribute('data-widget'));
+					};
+					/**
+					 * Return a new isntance of a widget by name attached to the specified element.
+					 * @param {DOM} element DOM element to attach the widget to.
+					 * @param {String} name Name of the widget class that will be instantiated
+					 */
+					LiveWidgets.prototype.instantiateWidget = function (element, name) {
+						// try {
+							return new this.widgets[name](element);
+						// }
+						// catch (e) {
+						//     console.warn(name +" failed to load.");
+						// 	console.error(e);
+						// 	/* Defer widget here */
+						// }
+					}
+	
+					LiveWidgets = new LiveWidgets(DOMWindow, DOMDocument);
+					/**
+					 * Class for managing the scanning of the DOM document.
+					 * @param {Number} interval Interval length in MS to time successive
+					 * scans of the document.
+					 */
+					var Monitor = function (interval) {
+						this.interval = interval;
+						this.monitor = {};
+						this.domSize = 0;
+					};
+					/**
+					 * Search the document for elements with the data-widget attribute that do
+					 * not also have the data-widget-id attribute. Call LiveWidgets.initializeWidget
+					 * with a DOM element that matches the above noted conditions.
+					 * @returns undefined
+					 */
+					Monitor.prototype.searchForElements = function () {
+						var domElements = DOMDocument.getElementsByTagName('*');
+						if (domElements.length == this.domSize) {
+							return false;
+						}
+						this.domSize = domElements.length;
+						for (var el = 0, len = domElements.length; el < len; el += 1) {
+							// try {
+								if (domElements[el] && domElements[el].getAttribute('data-widget') && !domElements[el].getAttribute('data-widget-id')) {
+									var node = domElements[el];
+									var canLoad = false;
+									var isNestedTemplate = false;
+									while(node.parentNode) {
+										node = node.parentNode;
+										if ("[object HTMLPreElement]" == node.toString()) {
+											isNestedTemplate = true;
+										}
+										if ("[object HTMLDocument]" == node.toString()) {
+											canLoad = true;
+										}
+										try {
+											var parentIsInstantiatedFirst = (node.getAttribute('data-widget') && node.getAttribute('data-widget-id'));
+											var parentIsTheDocument = (node.toString() == "[object HTMLHtmlElement]");
+										}
+										catch (e) {
+											// NOP
+										}
+										if (parentIsInstantiatedFirst || parentIsTheDocument) {
+											try {
+												canLoad = true;
+											}
+											catch (e) {
+												console.error(e);
+											}
+										}
+									}
+
+									if (!canLoad || (domElements[el].parentNode.toString() == "[object HTMLPreElement]")) {
+										console.warn("Defering widget loading.");
+									}
+									else {
+										if (!isNestedTemplate) {
+											console.log("Initializing Widget.");
+											LiveWidgets.initializeWidget(domElements[el]);	
+										}
+									}
+								}
+							// }
+							// catch (e) {
+							// 	console.error(e);
+							// };
+						}
+					};
+					/**
+					 * Start scanning the document for widgets.
+					 * @returns undefined
+					 */
+					Monitor.prototype.startScanning = function () {
+						this.searchForElements.call(this);
+						try {
+							document.addEventListener('DOMNodeInsertedIntoDocument', Helpers.bind(this.searchForElements), true);
+							this.monitor = setInterval(Helpers.bind(this.searchForElements, this), this.interval);
+						}
+						catch (e) {
+							clearInterval(this.monitor);
+							this.monitor = setInterval(Helpers.bind(this.searchForElements, this), this.interval);
+						}
+					};
+					/**
+					 * Stop scanning the document for widgets.
+					 * @returns undefined
+					 */
+					Monitor.prototype.stopScanning = function () {
+						clearInterval(this.monitor);
+					};
+	
+					Monitor = new Monitor(33);
+					console.log("Starting to scan for widgets.");
+					setTimeout(function () {
+						Monitor.startScanning();
+					}, 1000);
+	
+					DOMWindow.LiveWidgets = {
+						addWidget: Helpers.bind(LiveWidgets.addWidget, LiveWidgets),
+						extendWidget: Helpers.bind(LiveWidgets.extendWidget, LiveWidgets),
+						stopScanning: Helpers.bind(Monitor.stopScanning, Monitor),
+						startScanning: Helpers.bind(Monitor.startScanning, Monitor),
+						sendMessage: Helpers.bind(MessageController.sendMessage, MessageController)
+					};
+	
+				}
+
+			};
+			
+			WidgetFramework(DOMWindow, DOMDocument);
+
+
+			LiveWidgets.addWidget({
+				name: 'user-action',
+				model: {
+					event: ''
+				},
+				controller: {
+					dispatchMessageToGroupedWidgets: function (event) {
+						event.stopPropagation();
+						this.sendMessage(this.model.message, this.model.channel);
+					}
+				},
+				reinit: function () {
+					this.element.removeEventListener(this.model.event, this.controller.dispatchMessageToGroupedWidgets);
+					this.element.addEventListener(this.model.event, this.controller.dispatchMessageToGroupedWidgets, true);
+				}
+			});
+		
+
+			LiveWidgets.addWidget({
+				name: 'user-input',
+				model: {
+					event: "keyup",
+					name: "",
+					type: ''
+				},
+				constructor: function () {
+					var asdf = document.createElement("label");
+					this.element.parentNode.insertBefore(asdf, this.element);
+					asdf.innerHTML = this.model.channel;
+				},
+				controller: {
+					dispatchMessageToGroupedWidgets: function (event) {
+						event.stopPropagation();
+						this.sendMessage(this.element.value, this.model.channel);
+					}
+				},
+				reinit: function () {
+					this.element.removeEventListener(this.model.event, this.controller.dispatchMessageToGroupedWidgets);
+					this.element.addEventListener(this.model.event, this.controller.dispatchMessageToGroupedWidgets, true);
+					this.say("widget did render");
+				}
+			});
+			
+		
+		
+		
+		
+			$handle("voice");
+		
+		
+		
+				
+		
+		
+			var Action = {
+
+			};
+			var Procedure = {};
+		
+			Procedure["do redraw view"] = function (message) {
+				this.reinit();
+			};
+		
+			Procedure["do add property to property list"] = function (message) {
+				alert(message);
+				this.properties.properties.push(message);
+				this.say("the view needs to be redrawn");
+			}
+		
+			Procedure["do create new behavior dialog"] = function (message) {
+				window.alert("Add a new behavior");
+			};
+		
+			Procedure["do show widget"] = function (message) {
+				this.element.style.display = "block";
+			};
+		
+			Procedure["do hide widget"] = function (message) {
+				this.element.style.display = "none";
+			};
+		
+			Action["show create new propery dialog"] = function (message) {
+				this.say("show create new property dialog");
+			};
+		
+			Action["redraw view"] = function (message) {
+				this.say("redraw view");
+			};
+		
+			Action["add new property to property list"] = function (message) {
+				this.say(message, "add new property to property list");
+			};
+		
+			Action["show create new behavior dialog"] = function (message) {
+				window.alert("Behavior was added.");
+			};
+		
+			Action["hide create new property dialog"] = function (message) {
+				this.say("hide create new property dialog");
+			};
+		
+			Action["create new property"] = function (message) {
+				var inputs = this.element.getElementsByTagName("input");
+				var output = {};
+				for (var i = 0; i < inputs.length; i +=1 ) {
+					output[inputs[i].name.toLowerCase()] = inputs[i].value;
+				}
+				console.log(output);
+				this.say(output, "user did create a new property");
+				this.say("hide create new property dialog");
+			};
+				
+			Action["hide create new property dialog"] = function (message) {
+				this.say("hide create new property dialog");
+			};
+		
+		
+			LiveWidgets.addWidget({
+				name: "list-element",
+				properties: {
+					"label": "Loading..."
+				},
+				view: '<?=label ?>',
+				behaviors: {
+				
+				},
+				reactions: {
+				
+				}
+			}),
+		
+		
+		
+			LiveWidgets.addWidget({
+				name: "table",
+				properties: {
+					head: {
+						title: "Header",
+						description: ""
+					},
+					body: {
+
+					},
+					foot: {
+					
+					}
+				}
+			})
+
+
+
+			LiveWidgets.addWidget({
+				name: "form",
+				properties: {
+					fields: [
+					],
+					render: function (field) {
+						return '<label>' + field.label + '</label><input name="' + field.label + '" type="text" />';
+					}
+				},
+				constructor: function () {
+					try {
+						if (this.element.getElementsByTagName("code")[0] !== "undefined") {
+							this.model = this.properties = JSON.parse(this.element.getElementsByTagName("code")[0].innerHTML);
+						}
+					}
+					catch (e) {
+						console.log("failed to get model from code block");
+						console.error(e);
+					}
+					this.say("the view needs to be redrawn");
+				},
+				behaviors: {
+					"redraw view": Procedure["do redraw view"],
+					"dialog data model": function (message) {
+						alert('asdf');
+						console.log(message);
+						this.fields = message;
+						this.say("redraw view");
+					}
+				},
+				reactions: {
+					"the view needs to be redrawn": Action["redraw view"]			
+				}
+			});
+		
+		
+			LiveWidgets.addWidget({
+				name: "account-controller",
+				properties: {
+					username: "scott",
+					password: "test"
+				},
+				behaviors: {
+					"login user": function (message) {
+						console.log("Logging in user.");
+						this.say(this.properties, "login");
+					}
+				},
+				reactions: {
+					"username": function (message) {
+						this.model.username = message;
+					},
+					"password": function (message) {
+						this.model.password = message;
+					},
+					"The password you provided is not valid.": function (message) {
+						this.element.innerHTML = message;
+					},
+					"user was logged in": function (message) {
+						
+						
+						// console.log(message);
+						this.model.username = message.name.value;
+						this.model.password = message.password;
+						this.model.user = message;
+						
+						
+						// console.log("The user was logged in." + (new Date() - this.model.start));
+						this.element.innerHTML = "Welcome, " + this.model.username + ". You are now logged in. Your token is: #" + message.id;
+						
+						clearInterval(this.model.interval);
+						
+						this.model.interval = setInterval(function () {
+							
+							if ((this.element.offsetHeight <= 11)) {
+								
+								this.element.style.display = "none";
+								clearInterval(this.model.interval);
+								
+							}
+							
+							this.element.style.height = (this.element.offsetHeight - 13) + "px"; 
+							
+						}.bind(this), 33);
+						
+					}
+				}
+			});
+		
+			LiveWidgets.addWidget({
+				name: 'create-dialog',
+				properties: {
+					title: "Create Property",
+					description: "Add information about what composes your entity."
+				},
+				behaviors: {
+					"show create new property dialog": Procedure["do show widget"],
+					"hide create new property dialog": Procedure["do hide widget"]
+				},
+				reactions: {
+					"widget did render": Action["hide create new property dialog"],
+					"user did press the save button": Action["create new property"],
+					"user did press the cancel button": Action["hide create new property dialog"]
+				}
+			});
+		
+		
+		
+			LiveWidgets.addWidget({
+				name: 'entity-builder',
+				properties: {
+			        entityName: "Foundation",
+					properties: [],
+					behaviors: [],
+					reactions: []
+				},
+
+				behaviors: {
+					"register your instance id": function (message) {
+						this.model.id = this.element.getAttribute("data-widget-id");
+						this.say(this.model, "instance id");
+					},
+					"show create new behavior dialog": Procedure["do create new behavior dialog"],
+					"add new property to property list": Procedure["do add property to property list"],
+					"redraw view": Procedure["do redraw view"]
+				},
+				reactions: {
+					"user did press the add property button": Action["show create new propery dialog"],
+					"the view needs to be redrawn": Action["redraw view"],
+					"user did create a new property": Action["add new property to property list"],
+					"a user did create a new behavior": Action["show create new behavior dialog"]
+				}
+			});
+					
+		});
+		
+		</script>
+		
+		
+		
+
+
+<article data-activity="Spell Book">
+	
+	<h1>Spell Book</h1>
+	
+	<aside>
+		
+		<nav>
+			
+			
+			
+		</nav>
+		
+	</aside>
+	
+	<section>
+		<h2>Account Controller</h2>
+		<section>
+			<h3>Requirements</h3>
+			<section>
+				<h4>As a user I would like to login</h4>
+				<p>
+					A user would like to login to the application.
+					<br />
+					When a user needs to login you send a message to the Account Controller.
+				</p>
+				<code>
+					$with("account-controller").resolve("as a user i would like to login").for({username:"scott", password:"test"});
+					Foundation.sendMessage("account-controller", {username:"scott", password:"test"}, "as a user i would like to login");
+				</code>
+			</section>
+			<section>
+				<h4>As a user I would like to logout</h4>
+				<p>
+					A user would like to logout of my application user account.
+					<br />
+					This will destroy the users active session and notify the user of the effect.
+				</p>
+				<seciton>
+					<h5>Outputs</h5>
+					<p>A number of outputs are produced by resolving the requirement.</p>
+					<table>
+						<thead>
+							<tr>
+								<td>Key</td>
+								<td>Description</td>
+							</tr>
+						</thead>
+						<tbody>
+							<tr>
+								<td>The user did logout</td>
+								<td>The users account was logged out of the application successfully.</td>
+							</tr>
+
+							<tr>
+								<td>The user did fail to logout</td>
+								<td>The users account failed to logout of the application.</td>
+							</tr>
+
+						</tbody>
+					</table>
+				</section>
+			</section>
+
+		</section>
+	</section>
+	
+</article>
+
+
+
+</body>
+</html>

@@ -46,23 +46,24 @@ var model = {
 
 
 
-var client = redis.createClient();
-var otherClient = redis.createClient();  
+var client = redis.createClient(null, "copybyte.com");
+var otherClient = redis.createClient(null, "copybyte.com");  
   
   
 io.sockets.on('connection', function (socket) {
 	
 	client.on("message", function (channel, message) {
-		console.log("Message recieved from redis: " + channel + " : " + JSON.stringify(message));
+		// console.log("Message recieved from redis: " + channel + " : " + JSON.stringify(message));
 		var obj = JSON.parse(message);
 		try {
 			if (!model.broadCastMessages[obj.messageId]) {
 				var formalMessage = new Message(obj.message, (obj.group || channel), obj.channel, obj.context, {});
 				model.broadCastMessages[formalMessage.messageId] = true;
 			
-				console.log("Forwarding message from redis: " + channel + " : " + JSON.stringify(formalMessage));
+				// console.log("Forwarding message from redis: " + channel + " : " + JSON.stringify(formalMessage));
 				socket.emit(channel, formalMessage);
 			
+				model.broadCastMessages[obj.messageId] = true;
 			}
 		}
 		catch (e) {

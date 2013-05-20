@@ -46,14 +46,14 @@ var model = {
 
 
 
-var client = redis.createClient(6379, "copybyte.com");
-var otherClient = redis.createClient(6379, "copybyte.com");  
+var client = redis.createClient(6379, "copybyte-redis-master.com");
+var otherClient = redis.createClient(6379, "copybyte-redis-master.com");  
   
   
 io.sockets.on('connection', function (socket) {
 	
 	client.on("message", function (channel, message) {
-		// console.log("Message recieved from redis: " + channel + " : " + JSON.stringify(message));
+		 console.log("Message recieved from redis: " + channel + " : " + JSON.stringify(message));
 		var obj = JSON.parse(message);
 		try {
 			if (!model.broadCastMessages[obj.messageId] && !obj.handledInNode) {
